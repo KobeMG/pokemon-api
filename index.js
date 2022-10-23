@@ -43,7 +43,7 @@ const fethPokemonData = async () => {
         const resDescription = await axios.get(`https://pokeapi.co/api/v2/pokemon-species/${id}`); //feth pokemon data
         const { flavor_text_entries } = resDescription.data;
         const { flavor_text } = flavor_text_entries.find((description) => description.language.name === "en");
-        const caption = `Name: ${name} \n\nSkills: ${skillsString} \n\nDescription: ${flavor_text} \n\n #pokemon #nodejs #javascript #pikachu #pokemongo`;
+        const caption = `Name: ${name} ID: ${id}\n\nSkills: ${skillsString} \n\nDescription: ${flavor_text} \n\n #pokemon #nodejs #javascript #pikachu #pokemongo`;
         await writePokemonImage(id);
         return caption;
     } catch (error) {
@@ -79,9 +79,14 @@ const checkPokemonsPosted = async (id) => {
     const pokemonsPosted = await readFileAsync('./pokemonsPosted.txt', 'utf8');
     const pokemonsPostedArray = JSON.parse(pokemonsPosted);
     const isPosted = pokemonsPostedArray.includes(id);
+
     if(!isPosted){
         pokemonsPostedArray.push(id);
         fs.writeFileSync('./pokemonsPosted.txt', JSON.stringify(pokemonsPostedArray));
+        return false;
+    }
+    if(pokemonsPostedArray.length === 905){ //reset the file and start again
+        fs.writeFileSync('./pokemonsPosted.txt', JSON.stringify([]));
         return false;
     }
     return isPosted;

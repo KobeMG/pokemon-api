@@ -27,9 +27,8 @@ app.get("/send", (req, res) => {
   res.send(`POSTING POKEMON AT....${new Date()}`);
 });
 
-app.get("/read", (res) => {
+app.get("/read", (req,res) => {
   console.log("------------------------");
-  console.log("Pokemons posted: ");
   readDataFromPokemosPosted().then((lastPokemon) => {
     res.send(`Last pokemon posted: ${lastPokemon}`);
   });

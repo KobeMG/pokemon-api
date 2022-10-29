@@ -10,6 +10,32 @@ const { readFile } = require("fs");
 const { promisify } = require("util");
 const readFileAsync = promisify(readFile);
 
+//firebase
+const { db } = require("./firebase");
+
+const addToFirebase = async (id, name) => {
+  await db.collection("pokemons").add({
+    ID: id,
+    Name: name,
+  });
+};
+
+const readFromFirebase = async () => {
+  console.log("Reading from firebase");
+  const snapshot = await db.collection("pokemons").get();
+  const pokemons = [];
+  snapshot.docs.forEach((doc) => {
+    pokemons.push(doc.data());
+  });
+  return pokemons;
+};
+
+const deleteCollection = async () => {  //WARNING: This function will delete all the data in the collection 
+  //Delete all the pokemons in the collection
+  const snapshot = await db.collection("pokemons").get();
+  snapshot.docs.forEach((doc) => doc.ref.delete());
+};
+
 //Server
 app.use(express.json());
 const port = process.env.PORT || 4000;
@@ -29,8 +55,9 @@ app.get("/send", (req, res) => {
 
 app.get("/read", (req,res) => {
   console.log("------------------------");
-  readDataFromPokemosPosted().then((lastPokemon) => {
-    res.send(`Last pokemon posted: ${lastPokemon}`);
+  readDataFromPokemosPosted().then((data) => {
+    console.log(data);
+    res.send("Check the console");
   });
 });
 

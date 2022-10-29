@@ -54,7 +54,7 @@ app.get("/send", (req, res) => {
 
 app.get("/read", (req,res) => {
   console.log("------------------------");
-  readDataFromPokemosPosted().then((data) => {
+  readFromFirebase().then((data) => {
     console.log(data);
     res.send("Check the console");
   });

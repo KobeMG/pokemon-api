@@ -25,11 +25,12 @@ const readFromFirebase = async () => {
   const snapshot = await db.collection("pokemons").get();
   const pokemons = [];
   snapshot.docs.forEach((doc) => {
-    pokemons.push(doc.data());
+    pokemons.push(doc.data().ID);
   });
   return pokemons;
 };
-const deleteCollection = async () => {  //WARNING: This function will delete all the data in the collection 
+const deleteCollection = async () => {
+  //WARNING: This function will delete all the data in the collection
   //Delete all the pokemons in the collection
   const snapshot = await db.collection("pokemons").get();
   snapshot.docs.forEach((doc) => doc.ref.delete());
@@ -40,7 +41,6 @@ app.use(express.json());
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
-  //postImage();
 });
 // End points
 app.get("/hello", (req, res) => {
@@ -52,7 +52,7 @@ app.get("/send", (req, res) => {
   res.send(`POSTING POKEMON AT....${new Date()}`);
 });
 
-app.get("/read", (req,res) => {
+app.get("/read", (req, res) => {
   console.log("------------------------");
   readFromFirebase().then((data) => {
     console.log(data);
@@ -102,47 +102,25 @@ const writePokemonImage = async (id) => {
 };
 
 const randomPokemon = async () => {
-  const random = Math.floor(Math.random() * 905) + 1;
-  const pokemonPosted = await checkPokemonsPosted(random);
-  if (pokemonPosted) {
-    console.log(`Pokemon already posted: ${random}`);
-    randomPokemon();
-  } else {
-    console.log(`Pokemon id: ${random} not posted`);
-    return random;
+  const pokemonsPosted = await readFromFirebase();
+  while (true) {
+    const random = Math.floor(Math.random() * 905) + 1;
+    const alreadyPosted = pokemonsPosted.includes(random.toString());
+    if (!alreadyPosted) {
+      console.log(`Pokemon id: ${random} not posted`);
+      addToFirebase(random.toString(), "Added from the server");
+      return random;
+    }
+    if (pokemonsPosted.length === 905) {
+      console.log("All pokemons posted");
+      deleteCollection(); //WARNING: This function will delete all the data in the collection
+      addToFirebase(random.toString(), "First-added from the server"); //Add the first pokemon and start again
+      return random;
+    }
+    console.log(`Pokemon already posted: ${random}, searching another one`);
   }
 };
 
-const checkPokemonsPosted = async (id) => {
-  const pokemonsPosted = await readFileAsync("./pokemonsPosted.txt", "utf8");
-  const pokemonsPostedArray = JSON.parse(pokemonsPosted);
-  const isPosted = pokemonsPostedArray.includes(id);
-
-  if (!isPosted) {
-    pokemonsPostedArray.push(id);
-    fs.writeFileSync(
-      "./pokemonsPosted.txt",
-      JSON.stringify(pokemonsPostedArray)
-    );
-    return false;
-  }
-  if (pokemonsPostedArray.length === 905) {
-    //reset the file and start again
-    fs.writeFileSync("./pokemonsPosted.txt", JSON.stringify([]));
-    return false;
-  }
-  return isPosted;
-};
-
-const readDataFromPokemosPosted = async () => {
-  const pokemonsPosted = await readFileAsync("./pokemonsPosted.txt", "utf8");
-  const pokemonsPostedArray = JSON.parse(pokemonsPosted);
-  console.log("Pokemons posted: ");
-  console.log(pokemonsPostedArray);
-  const lastPokemon = pokemonsPostedArray[pokemonsPostedArray.length - 1];
-  console.log(`Last pokemon posted: ${lastPokemon}`);
-  return lastPokemon;
-};
 //Post pokemon to Instagram
 const postPokemon = async () => {
   const ig = new IgApiClient();

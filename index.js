@@ -29,7 +29,6 @@ const readFromFirebase = async () => {
   });
   return pokemons;
 };
-
 const deleteCollection = async () => {  //WARNING: This function will delete all the data in the collection 
   //Delete all the pokemons in the collection
   const snapshot = await db.collection("pokemons").get();

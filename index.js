@@ -3,8 +3,16 @@ const app = express();
 const axios = require("axios");
 const fs = require("fs");
 require("dotenv").config(); //ENV variables
-//Instagram
-const { IgApiClient } = require("instagram-private-api");
+
+//Twitter
+const Twitter = require("twit");
+const twitter = new Twitter({
+  consumer_key: process.env.CONSUMER_KEY,
+  consumer_secret: process.env.CONSUMER_SECRET,
+  access_token: process.env.ACCESS_TOKEN,
+  access_token_secret: process.env.ACCESS_TOKEN_SECRET,
+});
+
 const Jimp = require("jimp");
 const { readFile } = require("fs");
 const { promisify } = require("util");
@@ -16,7 +24,6 @@ const { db } = require("./firebase");
 const addToFirebase = async (id, name) => {
   await db.collection("pokemons").add({
     ID: id,
-    Name: name,
   });
 };
 
@@ -29,6 +36,7 @@ const readFromFirebase = async () => {
   });
   return pokemons;
 };
+
 const deleteCollection = async () => {
   //WARNING: This function will delete all the data in the collection
   //Delete all the pokemons in the collection
@@ -48,7 +56,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/send", (req, res) => {
-  postPokemon();
+  postTweet();
   res.send(`POSTING POKEMON AT....${new Date()}`);
 });
 
@@ -108,44 +116,38 @@ const randomPokemon = async () => {
     const alreadyPosted = pokemonsPosted.includes(random.toString());
     if (!alreadyPosted) {
       console.log(`Pokemon id: ${random} not posted`);
-      addToFirebase(random.toString(), "Added from the server");
+      addToFirebase(random.toString());
       return random;
     }
     if (pokemonsPosted.length === 905) {
       console.log("All pokemons posted");
       deleteCollection(); //WARNING: This function will delete all the data in the collection
-      addToFirebase(random.toString(), "First-added from the server"); //Add the first pokemon and start again
+      addToFirebase(random.toString()); //Add the first pokemon and start again
       return random;
     }
     console.log(`Pokemon already posted: ${random}, searching another one`);
   }
 };
 
-//Post pokemon to Instagram
-const postPokemon = async () => {
-  const ig = new IgApiClient();
+//post a tweet with a pokemon
+const postTweet = async () => {
   try {
-    console.log("Logging in...");
-    ig.state.generateDevice(process.env.INSTAGRAM_USERNAME);
-    await ig.account.login(
-      process.env.INSTAGRAM_USERNAME,
-      process.env.INSTAGRAM_PASSWORD
-    );
-    const caption = await fethPokemonData();
-    const published = await ig.publish.photo({
-      file: await readFileAsync("pokemon.jpg"),
-      caption: caption,
+    const status = await fethPokemonData();
+    const mediaFile = await readFileAsync("pokemon.jpg");
+    const base64image = Buffer.from(mediaFile).toString("base64");
+    const post = await twitter.post("media/upload", { media_data: base64image });
+    const mediaId = post.data.media_id_string;
+    await twitter.post("statuses/update", {
+      status: status,
+      media_ids: mediaId,
     });
+    console.log("Tweet posted 🐦");
     deleteFile("pokemon.jpg");
-    if (published) {
-      console.log("Image posted 😍");
-    }
   } catch (error) {
-    console.log("Oh no! Something went wrong: ");
     console.log(error);
   }
 };
-//General function
+
 const deleteFile = (path) => {
   try {
     fs.unlinkSync(path);

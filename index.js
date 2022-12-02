@@ -84,11 +84,12 @@ const fethPokemonData = async () => {
     const resDescription = await axios.get(
       `https://pokeapi.co/api/v2/pokemon-species/${id}`
     ); //feth pokemon data
-    const { flavor_text_entries } = resDescription.data;
-    const { flavor_text } = flavor_text_entries.find(
-      (description) => description.language.name === "en"
-    );
-    const caption = `A wild ${name} appeared!\nID: ${id}\n\nSkills: ${skillsString} \n\nDescription: ${flavor_text} \n\n #pokemon #nodejs #javascript #pikachu #pokemongo`;
+    // const { flavor_text_entries } = resDescription.data;
+    // const { flavor_text } = flavor_text_entries.find(
+    //   (description) => description.language.name === "en"
+    // );
+    //const caption = `A wild ${name} appeared!\nID: ${id}\n\nSkills: ${skillsString} \n\nDescription: ${flavor_text} \n\n #pokemon #nodejs #javascript #pikachu #pokemongo`;
+    const caption = `A wild ${name} appeared!\nID: ${id}\nSkills: ${skillsString} \n\n #pokemon #nodejs #javascript #pikachu #pokemongo`;
     console.log("A wild pokemon appeared!");
     await writePokemonImage(id);
     return caption;

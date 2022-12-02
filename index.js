@@ -81,9 +81,9 @@ const fethPokemonData = async () => {
     //return skills in a string
     const skillsString = skills.join(" - ");
     //return the pokemon description in english
-    const resDescription = await axios.get(
-      `https://pokeapi.co/api/v2/pokemon-species/${id}`
-    ); //feth pokemon data
+    // const resDescription = await axios.get(
+    //   `https://pokeapi.co/api/v2/pokemon-species/${id}`
+    // ); //feth pokemon data
     // const { flavor_text_entries } = resDescription.data;
     // const { flavor_text } = flavor_text_entries.find(
     //   (description) => description.language.name === "en"
@@ -136,7 +136,9 @@ const postTweet = async () => {
     const status = await fethPokemonData();
     const mediaFile = await readFileAsync("pokemon.jpg");
     const base64image = Buffer.from(mediaFile).toString("base64");
-    const post = await twitter.post("media/upload", { media_data: base64image });
+    const post = await twitter.post("media/upload", {
+      media_data: base64image,
+    });
     const mediaId = post.data.media_id_string;
     await twitter.post("statuses/update", {
       status: status,

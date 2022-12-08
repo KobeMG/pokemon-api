@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const axios = require("axios");
+const fetch = require("node-fetch");
 const fs = require("fs");
 require("dotenv").config(); //ENV variables
 
@@ -73,8 +73,10 @@ const fethPokemonData = async () => {
   const id = await randomPokemon();
   try {
     await writePokemonImage(id);
-    const res = await axios.get(`https://pokeapi.co/api/v2/pokemon/${id}`); //feth pokemon data
-    const { name, abilities } = res.data;
+    const endPoint = `https://pokeapi.co/api/v2/pokemon/${id}`;
+    const res = await fetch(endPoint);
+    const data = await res.json();
+    const { name, abilities } = data;
     //get the pokemon skills
     const skills = abilities.map((skill) => {
       return skill.ability.name;

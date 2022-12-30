@@ -21,9 +21,17 @@ const readFileAsync = promisify(readFile);
 //firebase
 const { db } = require("./firebase");
 
-const addToFirebase = async (id, name) => {
+const addToFirebase = async (id) => {
+  //fetch the pokemon name and add it to the collection
+  const endPoint = `https://pokeapi.co/api/v2/pokemon/${id}`;
+  const res = await fetch(endPoint);
+  const data = await res.json();
+  const { name } = data;
+
   await db.collection("pokemons").add({
     ID: id,
+    Date: new Date(),
+    Name: name,
   });
 };
 

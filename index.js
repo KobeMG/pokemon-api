@@ -91,7 +91,7 @@ const fethPokemonData = async () => {
     });
     //return skills in a string
     const skillsString = skills.join(" - ");
-    const caption = `A wild ${name} appeared!\nID: ${id}\nSkills: ${skillsString} \n\n #pokemon #nodejs #javascript #pikachu #pokemongo`;
+    const caption = `A wild ${name} appeared!\nID: ${id}\nAbilities: ${skillsString} \n\n #pokemon #nodejs #javascript #pikachu #pokemongo`;
     console.log("A wild pokemon appeared!");
     return caption;
   } catch (error) {
